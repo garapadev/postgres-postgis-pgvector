@@ -1,5 +1,12 @@
 # PostgreSQL com PostGIS e pgvector
 
+[![Docker Hub](https://img.shields.io/docker/pulls/garapadev/postgres-postgis-pgvector?logo=docker&logoColor=white&label=Docker%20Hub&color=blue)](https://hub.docker.com/r/garapadev/postgres-postgis-pgvector)
+[![Docker Image Size](https://img.shields.io/docker/image-size/garapadev/postgres-postgis-pgvector/latest?logo=docker&logoColor=white&label=Size&color=green)](https://hub.docker.com/r/garapadev/postgres-postgis-pgvector)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/SEU_USUARIO/postgres-postgis-pgvector)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16.9%20%7C%2015.13-blue?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![PostGIS](https://img.shields.io/badge/PostGIS-3.4.2-green?logo=postgis&logoColor=white)](https://postgis.net/)
+[![pgvector](https://img.shields.io/badge/pgvector-0.7.4-orange?logo=vector&logoColor=white)](https://github.com/pgvector/pgvector)
+
 Esta é uma imagem Docker personalizada do PostgreSQL construída a partir da imagem oficial do PostgreSQL, com instalação manual das extensões PostGIS e pgvector. Disponível no [DockerHub](https://hub.docker.com/r/garapadev/postgres-postgis-pgvector) em várias versões otimizadas.
 
 ## 🚀 Uso Rápido
