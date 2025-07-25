@@ -1,0 +1,89 @@
+# PostgreSQL 15 com PostGIS e pgvector
+FROM postgres:15
+
+# Informações do mantenedor
+LABEL maintainer="garapadev"
+LABEL description="PostgreSQL 15 with PostGIS 3.4.2 and pgvector 0.7.4"
+
+# Instalar dependências de build e runtime
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    cmake \
+    postgresql-server-dev-15 \
+    libgeos-dev \
+    libproj-dev \
+    libgdal-dev \
+    libjson-c-dev \
+    libprotobuf-c-dev \
+    protobuf-c-compiler \
+    libxml2-dev \
+    libboost-dev \
+    libcgal-dev \
+    libmpfr-dev \
+    libgmp-dev \
+    libspatialite-dev \
+    autoconf \
+    automake \
+    libtool \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Definir versões
+ENV POSTGIS_VERSION=3.4.2
+ENV PGVECTOR_VERSION=v0.7.4
+
+# Compilar e instalar PostGIS
+RUN cd /tmp && \
+    wget https://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz && \
+    tar -xzf postgis-${POSTGIS_VERSION}.tar.gz && \
+    cd postgis-${POSTGIS_VERSION} && \
+    ./configure \
+        --with-pgconfig=/usr/lib/postgresql/15/bin/pg_config \
+        --with-geosconfig=/usr/bin/geos-config \
+        --with-projdir=/usr \
+        --with-gdalconfig=/usr/bin/gdal-config \
+        --with-jsondir=/usr \
+        --with-protobufdir=/usr && \
+    make -j$(nproc) && \
+    make install && \
+    cd / && \
+    rm -rf /tmp/postgis-${POSTGIS_VERSION}*
+
+# Compilar e instalar pgvector
+RUN cd /tmp && \
+    git clone --branch ${PGVECTOR_VERSION} https://github.com/pgvector/pgvector.git && \
+    cd pgvector && \
+    export PG_CONFIG=/usr/lib/postgresql/15/bin/pg_config && \
+    make clean && \
+    make OPTFLAGS="" && \
+    make install && \
+    cd / && \
+    rm -rf /tmp/pgvector
+
+# Limpar dependências de build desnecessárias (manter algumas para debugging)
+RUN apt-get purge -y \
+    build-essential \
+    git \
+    cmake \
+    postgresql-server-dev-15 \
+    autoconf \
+    automake \
+    libtool \
+    && apt-get autoremove -y \
+    && apt-get autoclean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar script de inicialização
+COPY sql/init.sql /docker-entrypoint-initdb.d/
+
+# Definir variáveis de ambiente padrão
+ENV POSTGRES_DB=mydb
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+
+# Expor a porta padrão do PostgreSQL
+EXPOSE 5432
+
+# Comando padrão (herdado da imagem base)

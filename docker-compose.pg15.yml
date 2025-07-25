@@ -1,0 +1,47 @@
+services:
+  postgres-pgvector-postgis-15:
+    # Para desenvolvimento local, descomente as linhas build abaixo:
+    # build: 
+    #   context: .
+    #   dockerfile: docker/Dockerfile.pg15-optimized
+    
+    # Para produção, use a imagem do DockerHub:
+    image: garapadev/postgres-postgis-pgvector:15-optimized
+    container_name: postgres-pgvector-postgis-15
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5433:5432"  # Porta diferente para não conflitar com a versão 16
+    volumes:
+      - postgres_data_15:/var/lib/postgresql/data
+      - ./backups:/backups
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Opcional: PgAdmin para administração via web
+  pgadmin-15:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-15
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@exemplo.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8081:80"  # Porta diferente para não conflitar
+    depends_on:
+      - postgres-pgvector-postgis-15
+    restart: unless-stopped
+
+volumes:
+  postgres_data_15:
+    driver: local
+
+networks:
+  default:
+    name: postgres-network-15

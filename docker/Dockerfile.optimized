@@ -1,0 +1,75 @@
+# Dockerfile Otimizado - PostgreSQL + PostGIS + pgvector
+
+FROM postgres:16
+
+LABEL maintainer="garapadev <garapadev@gmail.com>"
+LABEL description="PostgreSQL 16 com PostGIS e pgvector - Build otimizado"
+LABEL version="1.1"
+
+# Variáveis de ambiente para as versões
+ENV POSTGIS_VERSION=3.4.2
+ENV PGVECTOR_VERSION=0.7.4
+
+# Instalação em uma única camada para reduzir o tamanho da imagem
+RUN apt-get update && apt-get install -y \
+    # Dependências básicas
+    build-essential cmake git wget pkg-config \
+    # PostgreSQL dev
+    postgresql-server-dev-16 \
+    # PostGIS dependencies
+    libxml2-dev libgeos-dev libproj-dev libgdal-dev \
+    libjson-c-dev libprotobuf-c-dev protobuf-c-compiler \
+    # Dependências adicionais
+    libssl-dev libcurl4-openssl-dev libtiff-dev \
+    libsqlite3-dev sqlite3 \
+    # Runtime dependencies que devem permanecer
+    libgeos-c1v5 libproj25 libgdal32 libjson-c5 libprotobuf-c1 \
+    libxml2 libtiff6 libsqlite3-0 \
+    && \
+    # Compilar PostGIS
+    cd /tmp && \
+    wget -q https://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz && \
+    tar -xzf postgis-${POSTGIS_VERSION}.tar.gz && \
+    cd postgis-${POSTGIS_VERSION} && \
+    ./configure \
+        --with-pgconfig=/usr/bin/pg_config \
+        --with-geosconfig=/usr/bin/geos-config \
+        --with-projdir=/usr \
+        --with-gdalconfig=/usr/bin/gdal-config \
+        --with-jsondir=/usr \
+        --with-protobufdir=/usr && \
+    make -j$(nproc) && \
+    make install && \
+    # Compilar pgvector
+    cd /tmp && \
+    git clone --depth 1 --branch v${PGVECTOR_VERSION} https://github.com/pgvector/pgvector.git && \
+    cd pgvector && \
+    make -j$(nproc) && \
+    make install && \
+    # Limpeza - remover apenas os pacotes de desenvolvimento
+    cd / && \
+    rm -rf /tmp/* && \
+    apt-get purge -y \
+        build-essential cmake git wget \
+        postgresql-server-dev-16 \
+        libxml2-dev libgeos-dev libproj-dev libgdal-dev \
+        libjson-c-dev libprotobuf-c-dev protobuf-c-compiler \
+        libssl-dev libcurl4-openssl-dev libtiff-dev pkg-config && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copiar script de inicialização
+COPY sql/init.sql /docker-entrypoint-initdb.d/
+
+# Definir variáveis de ambiente padrão
+ENV POSTGRES_DB=mydb
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+
+# Expor a porta padrão do PostgreSQL
+EXPOSE 5432
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} || exit 1

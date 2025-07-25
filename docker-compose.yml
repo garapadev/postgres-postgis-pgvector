@@ -1,0 +1,47 @@
+services:
+  postgres-pgvector-postgis:
+    # Para desenvolvimento local, descomente as linhas build abaixo:
+    # build: 
+    #   context: .
+    #   dockerfile: docker/Dockerfile.optimized
+    
+    # Para produção, use a imagem do DockerHub:
+    image: garapadev/postgres-postgis-pgvector:16-optimized
+    container_name: postgres-pgvector-postgis
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Opcional: PgAdmin para administração via web
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@exemplo.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres-pgvector-postgis
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: postgres-network

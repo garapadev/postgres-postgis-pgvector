@@ -1,0 +1,39 @@
+# Backups e dumps
+backups/*.sql
+backups/*.dump
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.temp
+
+# Controle de versão
+.git
+.gitignore
+
+# Documentação (não necessária na imagem)
+README.md
+*.md
+
+# IDEs e editores
+.vscode
+.idea
+*.swp
+*.swo
+
+# Scripts de build (não necessários na imagem)
+*.sh
+*.bat
+
+# Docker
+docker-compose.yml
+Dockerfile.*
+
+# Node.js (se houver)
+node_modules
+npm-debug.log
+
+# Python (se houver)
+__pycache__
+*.pyc
+*.pyo

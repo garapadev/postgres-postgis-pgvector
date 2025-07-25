@@ -1,0 +1,47 @@
+# === Dados sensíveis e backups ===
+backups/*.sql
+backups/*.dump
+backups/*.tar
+backups/*.gz
+
+# === Dados locais do PostgreSQL ===
+data/
+pgdata/
+postgres_data/
+
+# === Logs e temporários ===
+*.log
+*.tmp
+*.temp
+
+# === Arquivos do sistema ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === IDEs e editores ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# === Docker ===
+# Manter .dockerignore no repo
+# .dockerignore
+
+# === Node.js (se houver) ===
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# === Python (se houver) ===
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# === Variáveis de ambiente ===
+.env.local
+.env.production
+secrets.env
